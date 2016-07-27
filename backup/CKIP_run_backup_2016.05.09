@@ -1,0 +1,269 @@
+package wordSepertate;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.ParseException;
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import tw.cheyingwu.ckip.CKIP;
+import tw.cheyingwu.ckip.Term;
+
+public class CKIP_run {
+	public static String sentance;
+	public static JSONObject jsonObject = new JSONObject();
+	public static JSONObject jsonObject2 = new JSONObject();
+	private static CKIP segword = new CKIP("140.109.19.104",1501,"4102029006", "22680706");
+	
+	private static String cleaner(String sentance){
+		String text = "";
+		text=sentance;
+		text=text.replaceAll("[\\s*|\t|\r|\n]", "");
+		text=text.replaceAll("&amp;", "");
+		text=text.replaceAll("&lt;", "");
+		text=text.replaceAll("&gt;", "");
+		text=text.replaceAll("&apos;", "");
+		text=text.replaceAll("&quot;", "");
+		text=text.replaceAll("&#039;", "");
+		return text;
+	}
+	
+	private static MessageCount[] count(String[] array){
+		MessageCount[] Array1 =  new MessageCount[array.length] ;
+		boolean determin = true;
+		MessageCount Array2 = new MessageCount("", 0);
+		Array1[0] = Array2;
+		int max = 1;
+		for(int i=1; i< array.length ; i++)
+		{
+			int j=0;
+			int count = 0;
+			do
+			{
+				String Vol = Array1[j].getVolcabulary();
+				if(Vol.equals(array[i]))
+				{
+					count = 0;
+					count = Array1[j].getCount();
+					count++;
+					Array1[j].setCount(count);
+					determin = false;
+					break;
+				}//if
+				else
+				{
+					determin = true;
+				}//else
+				j++;
+			}while(j < max);
+			if( determin == true )
+			{
+				MessageCount Array3 = new MessageCount(array[i],1);
+				Array1[j] = Array3;
+				max++;
+			}//if
+			else
+			{
+				// Do Nothing
+			}//else
+		}//for
+//		Array1 = sort(Array1,max);
+		return Array1;
+	}
+	
+	protected static MessageCount[] sort(MessageCount[] array, int max){  //排序
+		MessageCount[] sortArray = array;
+		int length = max;
+		String permantVol1;
+		String permantVol2;
+		int permantCount1;
+		int permantCount2;
+		for(int i=0; i< length; i++)
+		{
+			
+			for(int j=i+1; j< length; j++)
+			{
+				permantCount1 =sortArray[i].getCount();
+				permantCount2 =sortArray[j].getCount();
+				if(permantCount1 < permantCount2)
+				{
+					permantVol1 =sortArray[i].getVolcabulary();
+					permantVol2 =sortArray[j].getVolcabulary();
+					MessageCount Array1 = new MessageCount(permantVol1, permantCount1);
+					MessageCount Array2 = new MessageCount(permantVol2, permantCount2);
+					sortArray[i] = Array2;
+					sortArray[j] = Array1;
+				}
+			}
+		}
+		return sortArray;
+	}
+	
+	private static void OrgJSON(MessageCount[] data, String org) throws IOException, org.json.simple.parser.ParseException{
+		if(jsonObject.get(org) == null){
+			JSONArray dataArray = new JSONArray();
+			JSONArray KWArray = new JSONArray();
+			int i =0;
+			while(data[i] != null){
+				JSONObject KWobj = new JSONObject();
+				KWobj.put("kw", data[i].getVolcabulary());
+				KWobj.put("num", data[i].getCount());
+				KWArray.add(KWobj);
+				i++;
+			}
+			dataArray.add(KWArray);
+			jsonObject.put(org,dataArray);
+		}else{
+			JSONArray dataArray = (JSONArray) jsonObject.get(org);
+			JSONArray KWArray = new JSONArray();
+			int i=0;
+			while(data[i] != null){
+				JSONObject KWobj = new JSONObject();
+				KWobj.put("kw", data[i].getVolcabulary());
+				KWobj.put("num", data[i].getCount());
+				KWArray.add(KWobj);
+				i++;
+			}
+			dataArray.add(KWArray);
+			jsonObject.put(org, dataArray);
+		} 
+		FileWriter jsonFileWriter = new FileWriter("C:/xampp/phpMyAdmin/Project/data/CKIPed.json");
+		jsonFileWriter.write(jsonObject.toJSONString());
+		jsonFileWriter.flush();
+		jsonFileWriter.close();
+	}
+	
+	private static void KWJSON(MessageCount[] data, String org) throws IOException, org.json.simple.parser.ParseException{
+		BufferedReader stopword = new BufferedReader(new InputStreamReader(new FileInputStream("C:/xampp/phpMyAdmin/Project/materials/stopword.txt"),"UTF-8"));
+		int i=1;
+		while(data[i] != null){
+			String dataName = data[i].getVolcabulary();
+			if(jsonObject2.get(dataName) == null){
+				JSONObject Orgobj = new JSONObject();
+				JSONArray OrgArray = new JSONArray();
+				Orgobj.put("org",org);
+				Orgobj.put("num", data[i].getCount());
+				OrgArray.add(Orgobj);
+				jsonObject2.put(dataName,OrgArray);
+			}
+			else{
+				JSONObject Orgobj = new JSONObject();
+				JSONArray OrgArray = (JSONArray) jsonObject2.get(data[i].getVolcabulary());
+				Orgobj.put("org",org);
+				Orgobj.put("num", data[i].getCount());
+				OrgArray.add(Orgobj);
+				jsonObject2.put(dataName,OrgArray);
+			}
+			i++;
+		}
+		FileWriter jsonFileWriter2 = new FileWriter("C:/xampp/phpMyAdmin/Project/data/CKIPed2.json");
+		jsonFileWriter2.write(jsonObject2.toJSONString());
+		jsonFileWriter2.flush();
+		jsonFileWriter2.close();
+	}
+	
+	public static void main(String[] argv)throws IOException, ParseException,java.lang.Error, org.json.simple.parser.ParseException{
+//		FileReader reader = null;
+//		File newdata = new File("C:/xampp/phpMyAdmin/Project/data/CuttedData.txt"); 
+//		newdata.delete();
+//		newdata.createNewFile(); // 清空CuttedData.txt
+//		JSONParser parser = new JSONParser();
+//		try {
+//			reader = new FileReader("C:/xampp/phpMyAdmin/Project/data/opendata.json"); 
+//		}catch(IOException e){
+//			System.out.println("opendata.json開啟錯誤");
+//		}// try-catch
+//		JSONArray jsonArray = (JSONArray) parser.parse(reader); // Parse JSON
+//		reader.close();	
+//		FileWriter writefile = null;//////////////
+//		try{
+//          writefile = new FileWriter("C:/xampp/phpMyAdmin/Project/data/CuttedData.txt",true);
+//		}catch (IOException e){
+//          System.out.print( "CuttedData 無法開啟");
+//		}
+//		PrintWriter printfile = new PrintWriter(writefile);//////////////
+//		String determine1 = "N";
+//		String determine2 ="Nv";
+//		for(int i= 0; i<jsonArray.size();i++) //將JSON送至MMSEG
+//		{
+//			sentance = "";
+//			JSONObject jsonObject = (JSONObject)jsonArray.get(i);
+//			String Title = (String) jsonObject.get("suggestTitle");
+//			String Field = (String) jsonObject.get("suggestFieldDesc");
+//			String Dataset = (String) jsonObject.get("suggestDatasetTitle");
+//			String Reason = (String) jsonObject.get("suggestReason");
+//			sentance = Title+ "。" + Field +  "。" + Dataset +  "。" + Reason + "。";
+//			sentance=cleaner(sentance);
+//			segword.setRawText(sentance);
+//			segword.send();
+//			if(jsonObject.get("deliverOrg").equals("")){
+//				printfile.print("none");
+//			}else{
+//				printfile.print(jsonObject.get("deliverOrg"));
+//			}//else
+//			for(Term t : segword.getTerm()){
+////				System.out.println(t.getTerm());
+//				if(t.getTerm() == null){
+//					
+//				}//if
+//				else if(t.getTag().equals(determine1))
+//				{
+//					printfile.print(","); 
+//					printfile.print(t.getTerm());
+//				}
+//				else if(t.getTag().equals( determine2)){
+//					printfile.print(",");
+//					printfile.print(t.getTerm());
+//				}//else if
+//				else{
+//				}//else
+//			}
+//			printfile.println("");
+//			if(i%10 ==10){  //每10筆暫停兩秒鐘
+//				try {
+//				    Thread.sleep(2000); 
+//				} catch(InterruptedException ex) {
+//				 
+//				}//try-catch
+//			}//for
+//		}//for
+//		printfile.close();
+//		writefile.close();
+//		///////////////// CKIP done
+		
+		FileReader reader1 = null;
+		try {
+			reader1 = new FileReader("C:/xampp/phpMyAdmin/Project/data/CuttedData.txt"); 
+		}catch(IOException e){
+			System.out.println("Cutted.json讀取開啟錯誤");
+		}// try-catch
+		BufferedReader dataReader1 = new BufferedReader(reader1); //逐行讀取 CuttedData.txt
+		String str = "";
+		MessageCount[] counted = new MessageCount[0]; 
+		ArrayList<MessageCount> text = new ArrayList<MessageCount>();
+		while((str=dataReader1.readLine()) != null)
+		{
+			String[] spilted = str.split(",");
+			counted=count(spilted);
+			int i =0;
+			while(counted[i] != null){
+				System.out.print(counted[i].getVolcabulary());
+				System.out.print(",");
+				System.out.print(counted[i].getCount());
+				System.out.print("|");
+				i++;
+			}
+			System.out.println("");
+//			OrgJSON(counted,spilted[0]);
+//			KWJSON(counted,spilted[0]);
+		}//while
+	}
+}

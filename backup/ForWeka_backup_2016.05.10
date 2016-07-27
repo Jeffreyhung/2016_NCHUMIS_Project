@@ -1,0 +1,37 @@
+while((str=dataReader1.readLine()) != null)
+		{
+			JSONObject dataObj = new JSONObject();
+			JSONArray kwArray = new JSONArray();
+			String[] spilted = str.split(",");
+			counted=count(spilted);
+			if(spilted[1].equals("資料") && spilted[0].equals("內政部"))	{
+				///去除有問題資料
+			}
+			else{
+			int i =1;
+			while(counted[i] != null){
+				JSONObject kwObj = new JSONObject();
+				kwObj.put("keyword",counted[i].getVolcabulary());
+				kwObj.put("num",counted[i].getCount());
+				kwArray.add(kwObj);
+				i++;
+			}
+			dataObj.put("data",kwArray);
+			dataObj.put("org",spilted[0]);
+			dataArray.add(dataObj);
+			}
+		}//while
+		File newdata = new File("C:/xampp/phpMyAdmin/Project/data/ForWeka.json"); 
+		newdata.delete();
+		newdata.createNewFile(); // 清空ForWeka
+		FileWriter writefile = null;
+		try{
+          writefile = new FileWriter("C:/xampp/phpMyAdmin/Project/data/ForWeka.json",true);
+		}catch (IOException e){
+          System.out.print( "ForWeka 無法開啟");
+		}
+		PrintWriter printfile = new PrintWriter(writefile);
+		printfile.print(dataArray);
+		System.out.print(dataArray);
+		printfile.close();
+		writefile.close();

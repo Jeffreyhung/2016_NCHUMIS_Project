@@ -1,0 +1,267 @@
+package wordSepertate;
+
+import java.io.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import com.chenlb.mmseg4j.ComplexSeg;
+import com.chenlb.mmseg4j.Dictionary;
+import com.chenlb.mmseg4j.MMSeg;
+import com.chenlb.mmseg4j.Seg;
+import com.chenlb.mmseg4j.Word;
+
+public class WordSeperate {
+	protected static Dictionary dic;
+	public static String sentance;
+
+	public WordSeperate() {
+		System.setProperty("mmseg.dic.path", "C:/xampp/phpMyAdmin/Project/src/dictionary/word.dic");	//自訂詞庫
+		dic = Dictionary.getInstance();
+	}
+
+	protected static Seg getSeg() {
+		return new ComplexSeg(dic);
+	}
+	
+	public static String segWords(String txt, String wordSpilt) throws IOException {
+		Reader input = new StringReader(txt);
+		StringBuilder sb = new StringBuilder();
+		boolean define = true;
+		Seg seg = getSeg();
+		MMSeg mmSeg = new MMSeg(input, seg);
+		Word word = null;
+		boolean first = true;
+		while((word=mmSeg.next())!=null) {
+			BufferedReader stopword =new BufferedReader(new InputStreamReader(new FileInputStream("C:/xampp/phpMyAdmin/Project/src/dictionary/stopword.txt"),"UTF-8"));
+			String text="";
+			if(!first) {
+				sb.append(wordSpilt);
+			}
+			String w = word.getString();
+			while ((text = stopword.readLine()) != null)
+			{
+				if( text.equals(w) )
+				{
+					define = false;
+					first = true;
+					break;
+				}
+				else
+				{
+					define = true;
+				}
+			}
+			if(define)
+			{
+				sb.append(w);
+				first = false;
+			}
+			stopword.close();
+		}
+		return sb.toString();	
+	}
+	
+	protected void run(String args) throws IOException {
+		String txt = args; 
+		FileWriter writefile = null;
+		try{
+            writefile = new FileWriter("data.txt",true);
+        }catch (IOException e){
+            System.out.print( "無法開啟檔案");
+        }
+        PrintWriter printfile = new PrintWriter(writefile);
+        printfile.println(segWords(txt, "|"));
+        printfile.close(); //輸出
+	}
+	
+	protected void sort(MessageCount[] array, int max){  //排序
+		MessageCount[] sortArray = array;
+		int length = max;
+		String permantVol1;
+		String permantVol2;
+		int permantCount1;
+		int permantCount2;
+		for(int i=0; i< length; i++)
+		{
+			
+			for(int j=i+1; j< length; j++)
+			{
+				permantCount1 =sortArray[i].getCount();
+				permantCount2 =sortArray[j].getCount();
+				if(permantCount1 < permantCount2)
+				{
+					permantVol1 =sortArray[i].getVolcabulary();
+					permantVol2 =sortArray[j].getVolcabulary();
+					MessageCount Array1 = new MessageCount(permantVol1, permantCount1);
+					MessageCount Array2 = new MessageCount(permantVol2, permantCount2);
+					sortArray[i] = Array2;
+					sortArray[j] = Array1;
+				}
+			}
+		}
+		
+	}
+	
+	public  static MessageCount[] count(String[] array){ //  統計斷詞後的字彙
+		MessageCount[] Array1 =  new MessageCount[10000] ;
+		boolean determin = true;
+		MessageCount Array2 = new MessageCount("", 0);
+		Array1[0] = Array2;
+		int max = 1;
+		for(int i=0; i< array.length ; i++)
+		{
+			int j=0;
+			int count = 0;
+			do
+			{
+				String Vol = Array1[j].getVolcabulary();
+				if(Vol.equals(array[i]))
+				{
+					count = 0;
+					count = Array1[j].getCount();
+					count++;
+					Array1[j].setCount(count);
+					determin = false;
+					break;
+				}//if
+				else
+				{
+					determin = true;
+				}//else
+				j++;
+			}while(j < max);
+			if( determin == true )
+			{
+				MessageCount Array3 = new MessageCount(array[i],1);
+				Array1[j] = Array3;
+				max++;
+			}//if
+			else
+			{
+				// Do Nothing
+			}//else
+		}//for
+		new WordSeperate().sort(Array1, max);
+		return Array1;
+	}// count
+	
+	public static MessageCount[] add(ArrayList<String> array) 
+	{
+		MessageCount[] Array1 =  new MessageCount[10000] ;
+		boolean determin = true;
+		MessageCount Array2 = new MessageCount("", 0);
+		Array1[0] = Array2;
+		int max = 1;
+		for(int i=0; i< array.size() ; i++)
+		{
+			int j=0;
+			int count = 0;
+			do
+			{
+				String Vol = Array1[j].getVolcabulary();
+				if(Vol.equals(array.get(i)))
+				{
+					count = 0;
+					count = Array1[j].getCount();
+					count++;
+					Array1[j].setCount(count);
+					determin = false;
+					break;
+				}//if
+				else
+				{
+					determin = true;
+				}//else
+				j++;
+			}while(j < max);
+			if( determin == true )
+			{
+				String vol = (String) array.get(i);
+				MessageCount Array3 = new MessageCount(vol,1);
+				Array1[j] = Array3;
+				max++;
+			}// if
+			else
+			{
+				// Do Nothing
+			}//else
+		}//for
+		new WordSeperate().sort(Array1, max);
+		return Array1;
+		
+	}// add
+	
+	public static void main(String[] argv)throws IOException, ParseException,java.lang.Error, org.json.simple.parser.ParseException{
+		FileReader reader = null;
+		File newdata = new File("data.txt"); 
+		newdata.delete();
+		newdata.createNewFile(); // 清空data.txt
+		JSONParser parser = new JSONParser();
+		try {
+			reader = new FileReader("C:/xampp/phpMyAdmin/Project/opendata.json"); 
+		}catch(IOException e){
+			System.out.println("opendata.json開啟錯誤");
+		}// try-catch
+		JSONArray jsonArray = (JSONArray) parser.parse(reader); // Parse JSON
+		reader.close();
+		
+		for(int i= 0; i<jsonArray.size();i++) //將JSON送至MMSEG
+		{
+			sentance = "";
+			JSONObject jsonObject = (JSONObject)jsonArray.get(i);
+			String Title = (String) jsonObject.get("suggestTitle");
+			String Field = (String) jsonObject.get("suggestFieldDesc");
+			String Dataset = (String) jsonObject.get("suggestDatasetTitle");
+			String Reason = (String) jsonObject.get("suggestReason");
+			sentance = Title + Field + Dataset + Reason ;
+			new WordSeperate().run(sentance);
+		}//for
+		
+		
+		/////////////////// 將資料斷詞完成，一行為一筆資料，儲存於data.txt ///////////////////
+		
+		
+		try {
+			reader = new FileReader("C:/xampp/phpMyAdmin/Project/data.txt"); 
+		}catch(IOException e){
+			System.out.println("data.txt開啟錯誤");
+		}// try-catch
+		BufferedReader dataReader = new BufferedReader(reader); //逐行讀取 data.txt
+		String dataString;
+		
+		File cutteddata = new File("C:/xampp/phpMyAdmin/Project/CuttedData.txt"); 
+		cutteddata.delete();
+		cutteddata.createNewFile();
+        FileWriter writefile2 = null;
+		try{
+            writefile2 = new FileWriter(cutteddata);
+        }catch (IOException e){
+            System.out.print( "無法開啟CuttedData");
+        }//try -catch
+        PrintWriter printfile2 = new PrintWriter(writefile2);
+        
+        //////////////  
+       
+		ArrayList<String> temp = new ArrayList<String>();
+		while((dataString = dataReader.readLine()) != null)
+		{
+			String[] AfterSplit = dataString.split("[\\|\\s]+"); //將各個詞分開
+			MessageCount[] Array1 = count(AfterSplit);
+			for(int x=0; x<5; x++)
+			{
+				temp.add(Array1[x].getVolcabulary());
+			}// for
+		} //while
+		MessageCount[] addUp = add(temp);
+		for(int y=0; y<100 ; y++)
+		{
+			printfile2.print(addUp[y].getVolcabulary());
+			printfile2.print(" | ");
+			printfile2.println(addUp[y].getCount());
+		}// for
+		printfile2.close();
+		
+	}// main
+} //class

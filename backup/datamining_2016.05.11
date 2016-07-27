@@ -1,0 +1,219 @@
+package wordSepertate;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+public class DataMining {
+	private static MessageCount[] count(String[] array){
+		MessageCount[] Array1 =  new MessageCount[array.length] ;
+		boolean determin = true;
+		MessageCount Array2 = new MessageCount("", 0);
+		Array1[0] = Array2;
+		int max = 1;
+		for(int i=1; i< array.length ; i++)
+		{
+			int j=0;
+			int count = 0;
+			do
+			{
+				String Vol = Array1[j].getVolcabulary();
+				if(Vol.equals(array[i]))
+				{
+					count = 0;
+					count = Array1[j].getCount();
+					count++;
+					Array1[j].setCount(count);
+					determin = false;
+					break;
+				}//if
+				else
+				{
+					determin = true;
+				}//else
+				j++;
+			}while(j < max);
+			if( determin == true )
+			{
+				MessageCount Array3 = new MessageCount(array[i],1);
+				Array1[j] = Array3;
+				max++;
+			}//if
+			else
+			{
+				// Do Nothing
+			}//else
+		}//for
+		Array1 = sort(Array1,max);
+		return Array1;
+	}
+	
+	protected static MessageCount[] sort(MessageCount[] array, int max){  //排序
+		MessageCount[] sortArray = array;
+		int length = max;
+		String permantVol1;
+		String permantVol2;
+		int permantCount1;
+		int permantCount2;
+		for(int i=0; i< length; i++)
+		{
+			
+			for(int j=i+1; j< length; j++)
+			{
+				permantCount1 =sortArray[i].getCount();
+				permantCount2 =sortArray[j].getCount();
+				if(permantCount1 < permantCount2)
+				{
+					permantVol1 =sortArray[i].getVolcabulary();
+					permantVol2 =sortArray[j].getVolcabulary();
+					MessageCount Array1 = new MessageCount(permantVol1, permantCount1);
+					MessageCount Array2 = new MessageCount(permantVol2, permantCount2);
+					sortArray[i] = Array2;
+					sortArray[j] = Array1;
+				}
+			}
+		}
+		return sortArray;
+	}
+	
+	public static void main(String[] argv) throws IOException{
+		FileReader reader1 = null;
+		try {
+			reader1 = new FileReader("C:/xampp/phpMyAdmin/Project/data/CuttedData.txt"); 
+		}catch(IOException e){
+			System.out.println("Cutted.json讀取開啟錯誤");
+		}// try-catch
+		BufferedReader dataReader1 = new BufferedReader(reader1); //逐行讀取 CuttedData.txt
+		String str = "";
+		boolean same1 = false;
+		boolean same2 = false;
+		ArrayList<String> orgArray = new ArrayList<String>();
+		ArrayList<String> kwArray = new ArrayList<String>();
+		String word = "";
+		while((str=dataReader1.readLine()) != null)
+		{
+			MessageCount[] counted = new MessageCount[0];
+			String[] spilted = str.split(",");
+			for(int i=0; i<orgArray.size();i++){//是否為未出現過的org
+				if(orgArray.contains(spilted[0])){
+					same1 = true;
+					break;
+				}else{
+					same1 = false;
+				}//else
+			}//for
+			if(same1 == false){
+				orgArray.add(spilted[0]);
+			}//if
+			counted=count(spilted);
+//			if(spilted[1].equals("資料") && spilted[0].equals("內政部"))	{
+//				///去除有問題資料
+//			}
+//			else{// 建立  關鍵字 資料庫
+				for(int j=0;j<counted.length;j++){
+					if(j>10){
+						break;
+					}else{
+						if(counted[j] == null)
+							break;
+						word = counted[j].getVolcabulary();
+						same2 = false;
+						for(int k=0;k<kwArray.size();k++){
+							if(kwArray.contains(word)){
+								same2 = true;
+								break;
+							}else{
+								same2 = false;
+							}//else
+						}//for
+						if(same2 == false){
+							kwArray.add(word);
+						}//if
+//					}//else
+				}//for
+			}//else
+		}//while
+		dataReader1.close();
+		reader1.close();
+		///////////建立arff資料檔////////
+		File newdata = new File("C:/xampp/phpMyAdmin/Project/data/opendata.arff"); 
+		newdata.delete();
+		newdata.createNewFile(); // 清空opendata.arff
+		FileWriter writefile = null;//////////////
+		try{
+          writefile = new FileWriter("C:/xampp/phpMyAdmin/Project/data/opendata.arff",true);
+		}catch (IOException e){
+          System.out.print( "CuttedData 無法開啟");
+		}
+		PrintWriter printfile = new PrintWriter(writefile);
+		printfile.println("@relation opendata");
+		printfile.println("");
+		printfile.print("@attribute organization {");
+		for(int i=0; i<orgArray.size();i++){
+			printfile.print(orgArray.get(i));
+			if(i != orgArray.size()-1){
+				printfile.print(", ");
+			}
+		}
+		printfile.println("}");
+		for(int i=0;i<10/*kwArray.size()*/;i++){
+			printfile.println("@attribute data"+i+" NUMERIC");
+		}
+		printfile.println("");
+		printfile.println("@data");
+		
+		FileReader reader2 = null;
+		try {
+			reader2 = new FileReader("C:/xampp/phpMyAdmin/Project/data/CuttedData.txt"); 
+		}catch(IOException e){
+			System.out.println("Cutted.json讀取開啟錯誤");
+		}// try-catch
+		BufferedReader dataReader2 = new BufferedReader(reader2); //逐行讀取 CuttedData.txt
+		int i=0;
+		String permant ="";
+		int permant2 =0;
+		boolean same3 = false;
+		int r=0;
+		while((str=dataReader2.readLine()) != null){
+			if(r>10)
+				break;
+			r++;
+			MessageCount[] Vol = new MessageCount[0];
+			String[] spilted2 =str.split(",");
+			Vol = count(spilted2);
+			if(spilted2[0].equals("none")){
+			}
+			else{
+				printfile.print(spilted2[0]);
+				for(i = 0;i<10/*kwArray.size()*/;i++){
+					printfile.print(",");
+					permant2 =0;
+					for(int j =0;j<10;j++){
+						if(Vol[j] == null){
+							break;
+						}else if((Vol[j].getVolcabulary()).equals(kwArray.get(i))){
+							same3 = true;
+							permant=Vol[j].getVolcabulary();
+							permant2 = Vol[j].getCount();
+							break;
+						}else{
+							same3 = false;
+						}
+					}
+					printfile.print(permant2);
+					
+				}
+				printfile.println("");
+			}
+		}//while
+		printfile.close();
+		writefile.close();		
+	}//main
+}//class
