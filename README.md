@@ -1,18 +1,17 @@
-<h1>初探與分析 政府開放資料"我還想要"平臺</h1>
-<h1>Basic Research and Analyze in
-Taiwan Government Open Data Suggestion Platform</h1>
-<h3>呂瑞麟指導教授、洪啟恆</h3>
-<h3>國立中興大學資訊管理學系</h3>
+# 初探與分析 政府開放資料"我還想要"平臺
+# Basic Research and Analyze in
+# Taiwan Government Open Data Suggestion Platform
+## 呂瑞麟指導教授、洪啟恆
+## 國立中興大學資訊管理學系
 
 
  
-摘要
-Open Data開放資料 是現今社會中越來越受到重視的一項資源，政府也跟上了趨勢，建立了政府資料開放平臺(http://data.gov.tw/) ，提供了許多的資料供國民下載。除此之外更推出了"我還想要"專區，讓民眾可以主動向政府提出需求，讓政府資料開放平臺更符合開放資料的本意，開放性。透過這個平臺，我們不在需要被動地等待政府公布我們所需要的資料，反之我們可以主動索取我們需要的資訊，幫助不管是我們的生活，或是研究。此專案即是對政府開放資料平臺的“我還想要”平臺做兩部分的分析與應用。第一部分為針對目前民眾所提出的需求做出分析，了解民眾的需求，並分析各個政府機關的回應效率，以達到了解需求和監督政府的目的。第二部分為透過文字探勘分析民眾需求的文字內容，抓出關鍵字，進而找出該需求建議應該分配的機關，達到節省人力和提高效率的目的。
+### 摘要  
+Open Data開放資料 是現今社會中越來越受到重視的一項資源，政府也跟上了趨勢，建立了政府資料開放平臺(http://data.gov.tw/) ，提供了許多的資料供國民下載。除此之外更推出了"我還想要"專區，讓民眾可以主動向政府提出需求，讓政府資料開放平臺更符合開放資料的本意，開放性。透過這個平臺，我們不在需要被動地等待政府公布我們所需要的資料，反之我們可以主動索取我們需要的資訊，幫助不管是我們的生活，或是研究。此專案即是對政府開放資料平臺的“我還想要”平臺做兩部分的分析與應用。第一部分為針對目前民眾所提出的需求做出分析，了解民眾的需求，並分析各個政府機關的回應效率，以達到了解需求和監督政府的目的。第二部分為透過文字探勘分析民眾需求的文字內容，抓出關鍵字，進而找出該需求建議應該分配的機關，達到節省人力和提高效率的目的。   
 關鍵字：開放資料, 文字探勘
 
-Abstract
-
-Open data is a resource that have been paid a lot of attention recently in the society, Taiwan government has caught up the trends and create the Government Open Data Platform, which provides numerous data for people to download. Furthermore, Taiwan government set up a ‘suggestion site’ for the masses to ask for the data they need, which made the Government Open Data Platform meets the original idea, open. Through the platform, we don’t need to wait for government to share the information that we need passively, on the contrary, we can voluntarily ask for the information that we need, and use it not only in our life and also in researches. This project process two parts of analyze and apply about the ‘suggestion site’. In the first part we calculated the suggestions people proposed in order to understand the people’s need, and also we calculated the time every organization took to reply suggestions to supervise the government. In the second part we analyze the people’s suggestion by using text mining, select the keywords in the suggestions, trying to find out the organization every suggestion correspond to, for the purpose of saving time and human resource that spent on assigning every suggestion and also improve the efficiency.
+###Abstract  
+Open data is a resource that have been paid a lot of attention recently in the society, Taiwan government has caught up the trends and create the Government Open Data Platform, which provides numerous data for people to download. Furthermore, Taiwan government set up a ‘suggestion site’ for the masses to ask for the data they need, which made the Government Open Data Platform meets the original idea, open. Through the platform, we don’t need to wait for government to share the information that we need passively, on the contrary, we can voluntarily ask for the information that we need, and use it not only in our life and also in researches. This project process two parts of analyze and apply about the ‘suggestion site’. In the first part we calculated the suggestions people proposed in order to understand the people’s need, and also we calculated the time every organization took to reply suggestions to supervise the government. In the second part we analyze the people’s suggestion by using text mining, select the keywords in the suggestions, trying to find out the organization every suggestion correspond to, for the purpose of saving time and human resource that spent on assigning every suggestion and also improve the efficiency.  
 Keywords: Open Data, text mining
 
 1.	動機與目的<br/>
